@@ -8,10 +8,12 @@
 #include "vector.h"
 
 // Values passed to a key handler when the given arrow key is pressed
-#define LEFT_ARROW 1
-#define UP_ARROW 2
-#define RIGHT_ARROW 3
-#define DOWN_ARROW 4
+typedef enum {
+    LEFT_ARROW = 1, 
+    UP_ARROW = 2, 
+    RIGHT_ARROW = 3, 
+    DOWN_ARROW = 4
+} arrow_key_t;
 
 /**
  * The possible types of key events.
