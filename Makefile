@@ -1,8 +1,10 @@
 # List of demo programs
-DEMOS = bounce
+DEMOS = bounce gravity pacman
+# List of C files in "libraries" that we provide
+STAFF_LIBS = test_util sdl_wrapper
 # List of C files in "libraries" that you will write.
 # This also defines the order in which the tests are run.
-STUDENT_LIBS = vector vec_list polygon
+STUDENT_LIBS = vector list polygon body scene
 
 # If we're not on Windows...
 ifneq ($(OS), Windows_NT)
@@ -186,6 +188,12 @@ out/%.obj: tests/%.c # or "tests"
 bin/bounce.exe bin\bounce.exe: out/bounce.obj out/sdl_wrapper.obj $(STUDENT_OBJS)
 	$(CC) $^ $(CFLAGS) -link $(LINKEROPTS) $(LIBS) -out:"$@"
 
+bin/gravity.exe bin\gravity.exe: out/gravity.obj out/sdl_wrapper.obj $(STUDENT_OBJS)
+	$(CC) $^ $(CFLAGS) -link $(LINKEROPTS) $(LIBS) -out:"$@"
+
+bin/pacman.exe bin\pacman.exe: out/pacman.obj out/sdl_wrapper.obj $(STUDENT_OBJS)
+	$(CC) $^ $(CFLAGS) -link $(LINKEROPTS) $(LIBS) -out:"$@"
+
 # Builds the test suite executables from the corresponding test .o file
 # and the library .o files. The only difference from the demo build command
 # is that it doesn't link the SDL libraries.
@@ -194,6 +202,8 @@ bin/test_suite_%.exe bin\test_suite_%.exe: out/test_suite_%.obj out/test_util.ob
 
 # Empty recipes for cross-OS task compatibility.
 bin/bounce bin\bounce: bin/bounce.exe ;
+bin/gravity bin\gravity: bin/gravity.exe ;
+bin/pacman bin\pacman: bin/pacman.exe ;
 bin/test_suite_% bin\test_suite_%: bin/test_suite_%.exe ;
 
 # CMD commands to test and clean
