@@ -22,10 +22,6 @@ const double CLOCK_RESET = 2.0;
 const double CLOCK_NEW_STAR = 3.5;
 const double GRAVITY = 1500;
 
-/** Adds a star to the given array list. Modifies existing list of stars.
- * @param star_arr the list of stars to add a star to
- * @param star the star to add
-*/
 void add_star(list_t *star_arr, star_t *star){
     list_add(star_arr, star);
 }

@@ -2,11 +2,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// creates yellow
 rgb_color_t rgb_color_init(){
     rgb_color_t random_color = { 
-        .r = (float) rand() / RAND_MAX,
-        .g = (float) rand() / RAND_MAX,
-        .b = (float) rand() / RAND_MAX,
+        .r = 1.0,
+        .g = 1.0,
+        .b = 0.0
     };
     return random_color;
 }

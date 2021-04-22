@@ -34,7 +34,7 @@ void body_free(body_t *body);
 
 /**
  * Gets the current shape of a body.
- * Returns a newly allocated vector list, which must be list_free()d.
+ * Returns a newly allocated vecor list, which must be list_free()d.
  *
  * @param body a pointer to a body returned from body_init()
  * @return the polygon describing the body's current position
