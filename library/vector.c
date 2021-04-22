@@ -55,3 +55,7 @@ vector_t vec_rotate(vector_t v, double angle){
     v2.y = v.x * sin(angle) + v.y * cos(angle);
     return v2;
 }
+
+double vec_abs_angle(vector_t v){
+    return atan(v.y / v.x);
+}

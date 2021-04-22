@@ -20,8 +20,7 @@ body_t *body_init(list_t *shape, double mass, rgb_color_t color){
 
     my_body->shape = shape;
     my_body->color = color;
-    vector_t centroid = polygon_centroid(shape);
-    my_body->centroid = centroid;
+    my_body->centroid = polygon_centroid(shape);
 
     vector_t initial_velocity = {.x = 0, .y = 0};
     my_body->velocity = initial_velocity;
@@ -31,8 +30,8 @@ body_t *body_init(list_t *shape, double mass, rgb_color_t color){
     my_body->angle = 0;
 
     return my_body;
-}
-
+}// I scheduled another oh sesh w devon for 5 today is that okay?
+// thats good!
 void body_free(body_t *body){
     list_free(body->shape);
     free(body);
@@ -72,8 +71,17 @@ void body_set_velocity(body_t *body, vector_t v){
     body->velocity = v;
 }
 
+/**
+ * Changes a body's orientation in the plane.
+ * The body is rotated about its center of mass.
+ * Note that the angle is *absolute*, not relative to the current orientation.
+ *
+ * @param body a pointer to a body returned from body_init()
+ * @param angle the body's new angle in radians. Positive is counterclockwise.
+ */
 void body_set_rotation(body_t *body, double angle){
-    polygon_rotate(body->shape, angle, body->centroid);
+    double abs_angle = vec_abs_angle(body->velocity);
+    polygon_rotate(body->shape, abs_angle, body->centroid);
 }
 
 void body_tick(body_t *body, double dt){

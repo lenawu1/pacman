@@ -81,18 +81,20 @@ list_t *pellet_init(){
     return pellet_list;
 }
 
-/*list_t *multiple_pellets(){
+
+list_t *multiple_pellets(){
     list_t *multiple_pellet_list = list_init(NUM_VERTICES, free); 
     for(int i = 0; i < NUM_PELLETS; i++){
-        list_add(multiple_pellet_list, pellet_init(););
+        list_add(multiple_pellet_list, pellet_init());
     }
     return multiple_pellet_list;
-}*/
+}
 
 
 /* when it eats a pellet we want to free the list of vectors of that pellet
 this function might not be void, but i will just put it down as void. */
 //void pacman_eat_pellet();
+
 
 void pacman_wrap_around()
 {
@@ -138,7 +140,7 @@ void pacman_wrap_around()
             body_set_centroid(pacman, wrapped_centroid);
         }
     }
-} 
+}
 
 
 /** 
@@ -155,17 +157,17 @@ void handler(char key, key_event_type_t type, double held_time){
         held_time += 1.0; // idk, however often the program updates or something, this might slow it down
         switch(key){
             case DOWN_ARROW:
-                body_set_rotation(pacman, 3 * M_PI / 2); // 270 degrees
+                body_set_rotation(pacman, 0.0); //3 * M_PI / 2
                 vector_t down_v = {.x = 0.0, .y = -1.0 * PACMAN_START_MOVING_SPEED};
                 body_set_velocity(pacman, vec_multiply(held_time, down_v));
                 break; // one at a time
             case UP_ARROW:
-                body_set_rotation(pacman, M_PI / 2); // 90 degrees
+                body_set_rotation(pacman, 0.0); //M_PI / 2
                 vector_t up_v = {.x = 0.0, .y = PACMAN_START_MOVING_SPEED};
                 body_set_velocity(pacman, vec_multiply(held_time, up_v));
                 break;
             case LEFT_ARROW:
-                body_set_rotation(pacman, M_PI); // 180 degrees
+                body_set_rotation(pacman, M_PI);
                 vector_t left_v = {.x = -1.0 * PACMAN_START_MOVING_SPEED, .y = 0};
                 body_set_velocity(pacman, vec_multiply(held_time, left_v));
                 break;
@@ -180,6 +182,7 @@ void handler(char key, key_event_type_t type, double held_time){
         /* this should stop the pacman from moving since the key is released
         but i am too lazy to write it rn so i just said return but
         i will fix it tmw. */
+        held_time = 0;
         body_set_velocity(pacman, VEC_ZERO);
     }
 }
@@ -190,6 +193,7 @@ int main(){
     scene = scene_init();
     double clock = 0.0;
     
+    //pellets = body
     //sdl_draw_polygon(pacman_init(), rgb_color_init());
     pacman = body_init(pacman_init(), MASS, rgb_color_init()); //cause of error
     scene_add_body(scene, pacman); 
