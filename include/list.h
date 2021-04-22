@@ -92,4 +92,6 @@ void list_resize(list_t *list, size_t size);
 */
 void list_replace(list_t *list, int index, void *elem);
 
+free_func_t list_get_freer(list_t *list);
+
 #endif // #ifndef __LIST_H__

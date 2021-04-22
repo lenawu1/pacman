@@ -1,5 +1,5 @@
 # List of demo programs
-DEMOS = bounce gravity
+DEMOS = bounce gravity pacman
 # List of C files in "libraries" that you will write.
 # This also defines the order in which the tests are run.
 STUDENT_LIBS = vector polygon star list body color scene
@@ -68,6 +68,9 @@ bin/bounce: out/bounce.o out/sdl_wrapper.o $(STUDENT_OBJS)
 # Unlike the out/%.o rule, this uses the LIBS flags and omits the -c flag,
 # since it is building a full executable.
 bin/gravity: out/gravity.o out/sdl_wrapper.o $(STUDENT_OBJS)
+	$(CC) $(CFLAGS) $(LIBS) $^ -o $@
+
+bin/pacman: out/pacman.o out/sdl_wrapper.o $(STUDENT_OBJS)
 	$(CC) $(CFLAGS) $(LIBS) $^ -o $@
 
 # Builds the test suite executables from the corresponding test .o file
@@ -193,6 +196,9 @@ bin/bounce.exe bin\bounce.exe: out/bounce.obj out/sdl_wrapper.obj $(STUDENT_OBJS
 bin/gravity.exe bin\gravity.exe: out/gravity.obj out/sdl_wrapper.obj $(STUDENT_OBJS)
 	$(CC) $^ $(CFLAGS) -link $(LINKEROPTS) $(LIBS) -out:"$@"
 
+bin/pacman.exe bin\pacman.exe: out/pacman.obj out/sdl_wrapper.obj $(STUDENT_OBJS)
+	$(CC) $^ $(CFLAGS) -link $(LINKEROPTS) $(LIBS) -out:"$@"
+
 # Builds the test suite executables from the corresponding test .o file
 # and the library .o files. The only difference from the demo build command
 # is that it doesn't link the SDL libraries.
@@ -202,6 +208,7 @@ bin/gravity.exe bin\gravity.exe: out/gravity.obj out/sdl_wrapper.obj $(STUDENT_O
 # Empty recipes for cross-OS task compatibility.
 bin/bounce bin\bounce: bin/bounce.exe ;
 bin/gravity bin\gravity: bin/gravity.exe ;
+bin/pacman bin\pacman: bin/pacman.exe ;
 #bin/test_suite_% bin\test_suite_%: bin/test_suite_%.exe ;
 
 # CMD commands to test and clean

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include "list.h"
 #include "vector.h"
 #include "sdl_wrapper.h"
@@ -8,143 +9,148 @@
 #include "body.h"
 #include "color.h"
 #include <math.h>
+                                                                                                                                                                                                                                      
+const vector_t CENTER = {.x = 500, .y = 250}; // where pacman will spawn
 
+const vector_t WINDOW_MIN = {.x = 0, .y = 0};
+const vector_t WINDOW_MAX = {.x = 1000, .y = 500};
 
-const vector_t MIN = {.x = 0, .y = 0};
-const vector_t MAX = {.x = 1000, .y = 500};
-const vector_t CENTER = {500, 250}; // where pacman will spawn
-const double MOUTH_ANGLE = M_PI / 3;
-const double PACMAN_RADIUS = 10.0; 
+const double MOUTH_ANGLE = M_PI / 3.0;
+const double PACMAN_RADIUS = 50.0; 
+const double PACMAN_START_MOVING_SPEED = 1.0;
+
 const double PELLET_RADIUS = 2.0;
 const double MASS = 10.0; // not sure why we need this, need it to initialize body_t
+const double VERT_DENSITY = 2 * M_PI / 10;
+const int NUM_PELLETS = 14;
 
-const double PACMAN_START_MOVING_SPEED = 10.0;
 const int NUM_VERTICES = 15;
-const int NUM_PELLETS = 15;
 const double MAX_VELOCITY = 0.0;
-const double ACCELERATIOn = 0.0;
-// initialize body_t
 
-// Pacman Color
-const float PACMAN_RED = 0.0;
-const float PACMAN_GREEN = 0.0;
-const float PACMAN_BLUE = 0.0;
-
-// Pellet color
-const float PELLET_RED = 0.0;
-const float PELLET_GREEN = 0.0;
-const float PELLET_BLUE = 0.0;
-
+//these are up here so that functions run independently
 body_t *pacman;
 scene_t *scene;
 
-void add_pacman_vertices(double x, double y, list_t *vertices){
-    vector_t pacman_vector = vec_init(x, y);
-    vector_t *v = malloc(sizeof(vector_t));
-    *v = pacman_vector;
-    list_add(vertices, v);
+vector_t random_loc(){    
+    vector_t vec_center = {
+        .x = rand() % (int)((WINDOW_MAX.x- PELLET_RADIUS/2) + PELLET_RADIUS/2),
+        .y = rand() % (int)((WINDOW_MAX.y - PELLET_RADIUS/2) + PELLET_RADIUS/2)
+    };
+    return vec_center;
 }
 
-const double NUM_PELLETS = 10;
-const double PELLET_RADIUS = 2;
+// creates the list_t for shape of pacman (pacman vertices)
+list_t *pacman_init(){
+    list_t *pacman_list = list_init(NUM_VERTICES, free);
+    double start_angle = (2 * M_PI); //not sure if this is the right angle, have to test
+    double change_angle = (360 / NUM_VERTICES) * (M_PI / 180); // ik i have to pull out the magic number
 
-#define WINDOW_WIDTH = 1000;
-#define WINDOW_HEIGHT = 500;
+    vector_t *c = malloc(sizeof(vector_t));
+    c->x = CENTER.x;
+    c->y = CENTER.y;
 
-//method to check if any
-body_t *create_pacman(){
-    list_t *pacman_list = malloc(NUM_VERTICES * sizeof(vector_t));
-    //how do we do the math for a semicircle with a mouth?
-    //how do we take into account size of radius
-    //and position of center of circle?
-    //take each vector initialized and add it to the list using list_add
-    //return that list
-    double current_angle = 0;
-    int eat_pellets_counter = 0;
-    double x;
-    double y;
-    while (current_angle < (M_PI * 2)) {
-        x = 0;
-        y = 0;
+    list_add(pacman_list, c);
+    
+    for (int i = 0; i < NUM_VERTICES - 1; i++){ // -1 for already added center
         vector_t *vertex = malloc(sizeof(vector_t));
-        vertex->x = -1 * sin(current_angle) * PACMAN_RADIUS + CENTER.x;
-        vertex->y = cos(current_angle) * PACMAN_RADIUS + CENTER.y.
-        add_pacman_vertices(x, y, pacman_list);
+        vertex->x = cos(start_angle + (i + 1) * change_angle) * PACMAN_RADIUS + c->x;
+        vertex->y = sin(start_angle + (i + 1) * change_angle) * PACMAN_RADIUS + c->y;
+        list_add(pacman_list, vertex);
     }
-    rgb_color_t pacman_color = color_init(PACMAN_RED,PELLET_GREEN,PACMAN_BLUE);
-    vector_t center = vec_init(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
-    polygon_translate(add_pacman_vertices, center);
-    body_t *pacman = body_init(NUM_VERTICES, MASS, pacman_color);
-    vec_list_add(pacman_list, CENTER);
+
     return pacman_list;
 }
 
-vector_t random_loc(){
-    vector_t vec_location = vec_init(rand() % (int) (WINDOW_WIDTH - PELLET_RADIUS/2)
-   + PELLET_RADIUS/2, rand() % (int)(WINDOW_HEIGHT - PELLET_RADIUS/2) + PELLET_RADIUS/2);
-    return vec_location;
-}
+// creates the list_t for shape of pellet (pellet vertices)
+list_t *pellet_init(){
+    list_t *pellet_list = list_init(NUM_VERTICES, free);
+    double start_angle = (360 / NUM_VERTICES) * (M_PI / 180);
+    double change_angle = (360 / NUM_VERTICES) * (M_PI / 180); // ik i have to pull out the magic number
 
-void *create_pellet(scene_t *scene){
-    list_t *pellets = list_init(NUM_PELLETS, free);
-    // making each pellet
-    for (double i = 0; i < 2 * M_PI; i += VERT_DENSITY) {
-        vector_t temp = vec_init(PELLET_RADIUS * -1 * sin(i), PELLET_RADIUS * cos(i));
-        vector_t *temp_point = malloc(sizeof(vector_t));
-        *temp_point = temp;
-        list_add(pellets, temp_point);
+    vector_t *c = malloc(sizeof(vector_t));
+    vector_t pellet_center = random_loc();
+    c->x = pellet_center.x;
+    c->y = pellet_center.y;
+
+    for (int i = 0; i < NUM_VERTICES; i++){
+        vector_t *vertex = malloc(sizeof(vector_t));
+        vertex->x = cos(start_angle + (i + 1) * change_angle) * PELLET_RADIUS + c->x; 
+        vertex->y = sin(start_angle + (i + 1) * change_angle) * PELLET_RADIUS + c->y;
+        list_add(pellet_list, vertex);
     }
-    // translating pellet to a random location
-    polygon_translate(pellets, random_loc()); //randomize the center for each pellet
-    rgb_color_t pellet_color = rgb_color_init(PELLET_RED, PELLET_GREEN, PELLET_BLUE);
-    body_t *pellet_body = body_init(pellets, MASS, pellet_color);
-    // adding pellet back into the list
-    scene_add_body(scene, pellet_body);
+    return pellet_list;
 }
 
-// list_t *pellet_init(){
-//     list_t *pellet_list = malloc(NUM_VERTICES * sizeof(vector_t));
-//     we want 15 vertices to connect using draw_polygon
-//     360 / 15 = 24 degrees 
-//     loop 15 times to initialize vectors that change position 
-//     by 24 degrees each time
-//     how do we take into account size of radius 
-//     and position of center of circle?
-//     take each vector initialized and add it to the list using list_add
-//     return that list
-//     double start_angle = (360 / NUM_VERTICES) * (M_PI / 180); 
-//     double change_angle = (360 / NUM_VERTICES) * (M_PI / 180); // ik i have to pull out the magic number
-
-//     for (int i = 0; i < NUM_VERTICES; i++){
-//         vector_t *vertex = malloc(sizeof(vector_t));
-//         vertex->x = cos(start_angle + (i + 1) * change_angle) * PELLET_RADIUS + center.x; 
-//         vertex->y = sin(start_angle + (i + 1) * change_angle) * PELLET_RADIUS + center.y;
-//         }
-//     return pellet_list;
-//}
+/*list_t *multiple_pellets(){
+    list_t *multiple_pellet_list = list_init(NUM_VERTICES, free); 
+    for(int i = 0; i < NUM_PELLETS; i++){
+        list_add(multiple_pellet_list, pellet_init(););
+    }
+    return multiple_pellet_list;
+}*/
 
 
 /* when it eats a pellet we want to free the list of vectors of that pellet
 this function might not be void, but i will just put it down as void. */
-void pacman_eat_pellet();
+//void pacman_eat_pellet();
 
-/* we need to make sure that pacman wraps around. method for checking if
-it is at the boundary. */
-void pacman_wrap_around();
+void pacman_wrap_around()
+{
+    int num_vertices = list_size(body_get_shape(pacman));
+    for(int i = 0; i < num_vertices; i++)
+    {
+        double y = ((vector_t*)list_get(body_get_shape(pacman), i))->y;
+        double x = ((vector_t*)list_get(body_get_shape(pacman), i))->x;
+        vector_t curr_centroid = body_get_centroid(pacman);
+        if (y <= WINDOW_MIN.y){ 
+            vector_t wrapped_centroid = 
+            {
+                .x = curr_centroid.x, 
+                .y = WINDOW_MAX.y - PACMAN_RADIUS
+            };
+            body_set_centroid(pacman, wrapped_centroid);
+        }
+        else if (y >= WINDOW_MAX.y)
+        {
+            vector_t wrapped_centroid = 
+            {
+                .x = curr_centroid.x, 
+                .y = WINDOW_MIN.y + PACMAN_RADIUS
+            };
+            body_set_centroid(pacman, wrapped_centroid);
+        }
+        else if (x <= WINDOW_MIN.x)
+        {
+            vector_t wrapped_centroid = 
+            {
+                .x = WINDOW_MAX.x - PACMAN_RADIUS, 
+                .y = curr_centroid.y
+            };
+            body_set_centroid(pacman, wrapped_centroid);
+        }
+        else if (x >= WINDOW_MAX.x)
+        {
+            vector_t wrapped_centroid = 
+            {
+                .x = WINDOW_MIN.x + PACMAN_RADIUS, 
+                .y = curr_centroid.y
+            };
+            body_set_centroid(pacman, wrapped_centroid);
+        }
+    }
+} 
 
-/* potential helper function for wrap around. */
-bool pacman_at_boundary();
 
 /** 
  * See documentation in sdl_wrapper.h line 40.
- * Creates a key_hander_t called key_handler which can be passed into sdl_on_key to control
+ * Creates a key_hander_t called handler which can be passed into sdl_on_key to control
  * keyboard input.
  * 
  * @param key the key pressed
  * @param type can be KEY_PRESSED or KEY_RELEASED
  * @param held_time how long the key was held down
 **/
-void key_handler(char key, key_event_type_t type, double held_time){
+void handler(char key, key_event_type_t type, double held_time){
     if (type == KEY_PRESSED){
         held_time += 1.0; // idk, however often the program updates or something, this might slow it down
         switch(key){
@@ -174,22 +180,27 @@ void key_handler(char key, key_event_type_t type, double held_time){
         /* this should stop the pacman from moving since the key is released
         but i am too lazy to write it rn so i just said return but
         i will fix it tmw. */
-        return;
+        body_set_velocity(pacman, VEC_ZERO);
     }
 }
 
 int main(){
-    scene_t *scene = scene_init();
-    sdl_init(MIN, MAX);
+    sdl_init(WINDOW_MIN, WINDOW_MAX);
+        
+    scene = scene_init();
     double clock = 0.0;
+    
+    //sdl_draw_polygon(pacman_init(), rgb_color_init());
+    pacman = body_init(pacman_init(), MASS, rgb_color_init()); //cause of error
+    scene_add_body(scene, pacman); 
 
-    // add pacman
+    // sdl_draw_polygon(body_get_shape(pacman), rgb_color_init());
+
     // add pellets
 
-    sdl_on_key(key_handler); //handles keyboard input - inside while loop or not? - asked devin
+    sdl_on_key(handler); //handles keyboard input - inside while loop or not? - asked devin
 
-    while(!sdl_is_done())
-    {
+    while(!sdl_is_done()){
         double dt = time_since_last_tick();
         clock += dt;
 

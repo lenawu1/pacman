@@ -5,18 +5,18 @@
 #include "list.h"
 #include "math.h"
 
-const vector_t MIN = {.x = 0, .y = 0};
-const vector_t MAX = {.x = 1000, .y = 500};
-const vector_t CENTER = {.x = 500, .y = 250};
+const vector_t MIN_BOUNCE = {.x = 0, .y = 0};
+const vector_t MAX_BOUNCE = {.x = 1000, .y = 500};
+const vector_t CENTER_BOUNCE = {.x = 500, .y = 250};
 const vector_t VELOCITY = {.x = 1000, .y = 1000};
 const double PENTAGON_RATIO = 2.61803398875;
-const double RADIUS = 50.0;
+const double RADIUS_BOUNCES = 50.0;
 const double ROT_SPEED = 2.5;
 const double COLOR_R = 0.635;
 const double COLOR_G = 0.839;
 const double COLOR_B = 0.976;
 
-list_t *make_polygon(vector_t center, double radius){
+list_t *make_polygon(vector_t CENTER_BOUNCE, double RADIUS_BOUNCEs){
     list_t *star_vertices = list_init(10, (free_func_t) free);
 
     double start_angle = M_PI / 5.0;
@@ -25,12 +25,12 @@ list_t *make_polygon(vector_t center, double radius){
     for (int i = 0; i < 10; i++){
         vector_t *vertex = malloc(sizeof(vector_t));
         if (i % 2 == 0){
-            vertex->x = cos(start_angle + (i + 1) * change_angle) * RADIUS + center.x; 
-            vertex->y = sin(start_angle + (i + 1) * change_angle) * RADIUS + center.y;
+            vertex->x = cos(start_angle + (i + 1) * change_angle) * RADIUS_BOUNCES + CENTER_BOUNCE.x; 
+            vertex->y = sin(start_angle + (i + 1) * change_angle) * RADIUS_BOUNCES + CENTER_BOUNCE.y;
         }
         else{
-            vertex->x = cos(start_angle + (i + 1) * change_angle) * (RADIUS / PENTAGON_RATIO) + center.x;
-            vertex->y = sin(start_angle + (i + 1) * change_angle) * (RADIUS / PENTAGON_RATIO) + center.y;
+            vertex->x = cos(start_angle + (i + 1) * change_angle) * (RADIUS_BOUNCES / PENTAGON_RATIO) + CENTER_BOUNCE.x;
+            vertex->y = sin(start_angle + (i + 1) * change_angle) * (RADIUS_BOUNCES / PENTAGON_RATIO) + CENTER_BOUNCE.y;
         }
         list_add(star_vertices, vertex);   
     }
@@ -42,10 +42,10 @@ char change_velocity_collision(list_t *vertices, vector_t velocity){
     for (int i = 0; i < 10; i++){
         double x = ((vector_t*)list_get(vertices, i))->x;
         double y = ((vector_t*)list_get(vertices, i))->y;
-        if ((x <= MIN.x && velocity.x < 0) || (x >= MAX.x && velocity.x > 0)){
+        if ((x <= MIN_BOUNCE.x && velocity.x < 0) || (x >= MAX_BOUNCE.x && velocity.x > 0)){
             return 'x';
         }
-        else if ((y <= MIN.y && velocity.y < 0) || (y >= MAX.y && velocity.y > 0)){
+        else if ((y <= MIN_BOUNCE.y && velocity.y < 0) || (y >= MAX_BOUNCE.y && velocity.y > 0)){
             return 'y';
         }
     }
@@ -78,8 +78,8 @@ void update_window(list_t *vertices){
 }
 
 int main(){
-    list_t *star = make_polygon(CENTER, RADIUS);
-    sdl_init(MIN, MAX);
+    list_t *star = make_polygon(CENTER_BOUNCE, RADIUS_BOUNCES);
+    sdl_init(MIN_BOUNCE, MAX_BOUNCE);
     vector_t speed = VELOCITY;
 
     while(!sdl_is_done()){

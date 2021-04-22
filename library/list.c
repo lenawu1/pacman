@@ -33,16 +33,13 @@ list_t *list_init(size_t initial_size, free_func_t freer){
 }
 
 void list_free(list_t *list){
-    int size = list->size;
-
-    free_func_t fft = list->freer;
-
+    size_t size = list->size;
     for (int i = 0; i < size; i++){
-        fft(list->data[i]);
+        list->freer(list->data[i]);
     }
     
-    fft(list->data);
-    fft(list);
+    free(list->data);
+    free(list);
 }
 
 size_t list_size(list_t *list){
@@ -83,4 +80,8 @@ void list_resize(list_t *list, size_t size){
 void list_replace(list_t *list, int index, void *elem){
     assert(elem != NULL);
     list->data[index] = elem;
+}
+
+free_func_t list_get_freer(list_t *list){
+    return list->freer;
 }

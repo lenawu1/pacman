@@ -2,14 +2,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-
-vector_t vec_init(double x, double y) {
-  vector_t v;
-  v.x = x;
-  v.y = y;
-  return v;
-}
-
 const vector_t VEC_ZERO = {
     .x = 0.0,
     .y = 0.0
