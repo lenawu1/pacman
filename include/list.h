@@ -83,4 +83,13 @@ void list_add(list_t *list, void *value);
 */
 void list_resize(list_t *list, size_t size);
 
+/**
+ * Replaces the existing element at index i with vector.
+ * 
+ * @param list a pointer to the list
+ * @param index index to replace
+ * @param vector vector to replace in list
+*/
+void list_replace(list_t *list, int index, void *elem);
+
 #endif // #ifndef __LIST_H__

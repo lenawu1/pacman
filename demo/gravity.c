@@ -121,7 +121,7 @@ void update_window(list_t *star_arr){
 
 
 int main(){
-    list_t *star_arr = list_init(NUM_STARS, free_funct_t (free)); 
+    list_t *star_arr = list_init(NUM_STARS, free); 
     double clock = 0;
 
     int num_vertices = NUM_VERTICES;

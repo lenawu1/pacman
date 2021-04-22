@@ -2,6 +2,8 @@
 #define __SCENE_H__
 
 #include <stdbool.h>
+#include <stdlib.h>
+#include <assert.h>
 #include "body.h"
 #include "list.h"
 

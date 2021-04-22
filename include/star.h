@@ -1,5 +1,6 @@
 #include "list.h"
 #include "vector.h"
+#include "color.h"
 
 typedef struct star star_t;
  

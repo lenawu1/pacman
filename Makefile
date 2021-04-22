@@ -1,10 +1,8 @@
 # List of demo programs
-DEMOS = bounce gravity pacman
-# List of C files in "libraries" that we provide
-STAFF_LIBS = test_util sdl_wrapper
+DEMOS = bounce gravity
 # List of C files in "libraries" that you will write.
 # This also defines the order in which the tests are run.
-STUDENT_LIBS = vector list polygon body scene
+STUDENT_LIBS = vector polygon star list body color scene
 
 # If we're not on Windows...
 ifneq ($(OS), Windows_NT)
@@ -31,7 +29,7 @@ LIBS = $(LIB_MATH) $(shell sdl2-config --libs) -lSDL2_gfx
 # and ".o" to the end of each value in STUDENT_LIBS.
 STUDENT_OBJS = $(addprefix out/,$(STUDENT_LIBS:=.o))
 # List of test suite executables, e.g. "bin/test_suite_vector"
-TEST_BINS = $(addprefix bin/test_suite_,$(STUDENT_LIBS))
+#TEST_BINS = $(addprefix bin/test_suite_,$(STUDENT_LIBS))
 # List of demo executables, i.e. "bin/bounce".
 DEMO_BINS = $(addprefix bin/,$(DEMOS))
 # All executables (the concatenation of TEST_BINS and DEMO_BINS)
@@ -40,7 +38,7 @@ BINS = $(TEST_BINS) $(DEMO_BINS)
 # The first Make rule. It is relatively simple:
 # "To build 'all', make sure all files in BINS are up to date."
 # You can execute this rule by running the command "make all", or just "make".
-all: $(BINS)
+all: $(DEMO_BINS)
 
 # Any .o file in "out" is built from the corresponding C file.
 # Although .c files can be directly compiled into an executable, first building
@@ -64,13 +62,19 @@ out/%.o: tests/%.c # or "tests"
 # Unlike the out/%.o rule, this uses the LIBS flags and omits the -c flag,
 # since it is building a full executable.
 bin/bounce: out/bounce.o out/sdl_wrapper.o $(STUDENT_OBJS)
+	$(CC) $(CFLAGS) $(LIBS) $^ -o $@ 
+
+# Builds bin/gravity by linking the necessary .o files.
+# Unlike the out/%.o rule, this uses the LIBS flags and omits the -c flag,
+# since it is building a full executable.
+bin/gravity: out/gravity.o out/sdl_wrapper.o $(STUDENT_OBJS)
 	$(CC) $(CFLAGS) $(LIBS) $^ -o $@
 
 # Builds the test suite executables from the corresponding test .o file
 # and the library .o files. The only difference from the demo build command
 # is that it doesn't link the SDL libraries.
-bin/test_suite_%: out/test_suite_%.o out/test_util.o $(STUDENT_OBJS)
-	$(CC) $(CFLAGS) $(LIB_MATH) $^ -o $@
+#bin/test_suite_%: out/test_suite_%.o out/test_util.o $(STUDENT_OBJS)
+#	$(CC) $(CFLAGS) $(LIB_MATH) $^ -o $@
 
 # Runs the tests. "$(TEST_BINS)" requires the test executables to be up to date.
 # The command is a simple shell script:
@@ -81,8 +85,8 @@ bin/test_suite_%: out/test_suite_%.o out/test_util.o $(STUDENT_OBJS)
 # "$$f" runs the test; "$$" escapes the $ character,
 #   and "$f" tells the shell to substitute the value of the variable f
 # "echo" prints a newline after each test's output, for readability
-test: $(TEST_BINS)
-	set -e; for f in $(TEST_BINS); do echo $$f; $$f; echo; done
+#test: $(TEST_BINS)
+#	set -e; for f in $(TEST_BINS); do echo $$f; $$f; echo; done
 
 # Removes all compiled files.
 # find <dir> is the command to find files in a directory
@@ -156,16 +160,14 @@ LINKEROPTS += -NODEFAULTLIB:msvcrt.lib
 # and ".obj" to the end of each value in STUDENT_LIBS.
 STUDENT_OBJS = $(addprefix out/,$(STUDENT_LIBS:=.obj))
 # List of test suite executables, e.g. "bin/test_suite_vector.exe"
-TEST_BINS = $(addsuffix .exe,$(addprefix bin/test_suite_,$(STUDENT_LIBS)))
+#TEST_BINS = $(addsuffix .exe,$(addprefix bin/test_suite_,$(STUDENT_LIBS)))
 # List of demo executables, i.e. "bin/bounce.exe".
 DEMO_BINS = $(addsuffix .exe,$(addprefix bin/,$(DEMOS)))
-# All executables (the concatenation of TEST_BINS and DEMO_BINS)
-BINS = $(TEST_BINS) $(DEMO_BINS)
 
 # The first Make rule. It is relatively simple:
 # "To build 'all', make sure all files in BINS are up to date."
 # You can execute this rule by running the command "make all", or just "make".
-all: $(BINS)
+all: $(DEMO_BINS)
 
 # Any .o file in "out" is built from the corresponding C file.
 # Although .c files can be directly compiled into an executable, first building
@@ -182,8 +184,8 @@ out/%.obj: library/%.c # source file may be found in "library"
 	$(CC) -c $^ $(CFLAGS) -Fo"$@"
 out/%.obj: demo/%.c # or "demo"
 	$(CC) -c $^ $(CFLAGS) -Fo"$@"
-out/%.obj: tests/%.c # or "tests"
-	$(CC) -c $^ $(CFLAGS) -Fo"$@"
+#out/%.obj: tests/%.c # or "tests"
+#	$(CC) -c $^ $(CFLAGS) -Fo"$@"
 
 bin/bounce.exe bin\bounce.exe: out/bounce.obj out/sdl_wrapper.obj $(STUDENT_OBJS)
 	$(CC) $^ $(CFLAGS) -link $(LINKEROPTS) $(LIBS) -out:"$@"
@@ -191,20 +193,16 @@ bin/bounce.exe bin\bounce.exe: out/bounce.obj out/sdl_wrapper.obj $(STUDENT_OBJS
 bin/gravity.exe bin\gravity.exe: out/gravity.obj out/sdl_wrapper.obj $(STUDENT_OBJS)
 	$(CC) $^ $(CFLAGS) -link $(LINKEROPTS) $(LIBS) -out:"$@"
 
-bin/pacman.exe bin\pacman.exe: out/pacman.obj out/sdl_wrapper.obj $(STUDENT_OBJS)
-	$(CC) $^ $(CFLAGS) -link $(LINKEROPTS) $(LIBS) -out:"$@"
-
 # Builds the test suite executables from the corresponding test .o file
 # and the library .o files. The only difference from the demo build command
 # is that it doesn't link the SDL libraries.
-bin/test_suite_%.exe bin\test_suite_%.exe: out/test_suite_%.obj out/test_util.obj $(STUDENT_OBJS)
-	$(CC) $^ $(CFLAGS) -link $(LINKEROPTS) -out:"$@"
+#bin/test_suite_%.exe bin\test_suite_%.exe: out/test_suite_%.obj out/test_util.obj $(STUDENT_OBJS)
+#	$(CC) $^ $(CFLAGS) -link $(LINKEROPTS) -out:"$@"
 
 # Empty recipes for cross-OS task compatibility.
 bin/bounce bin\bounce: bin/bounce.exe ;
 bin/gravity bin\gravity: bin/gravity.exe ;
-bin/pacman bin\pacman: bin/pacman.exe ;
-bin/test_suite_% bin\test_suite_%: bin/test_suite_%.exe ;
+#bin/test_suite_% bin\test_suite_%: bin/test_suite_%.exe ;
 
 # CMD commands to test and clean
 
@@ -214,8 +212,8 @@ bin/test_suite_% bin\test_suite_%: bin/test_suite_%.exe ;
 # "cmd /c %%i.exe" runs the test,
 # "|| exit /b" causes the session to exit if any of the tests fail,
 # "echo." prints a newline.
-test: $(TEST_BINS)
-	for %%i in ($(subst /,\, $(TEST_BINS))) \
+#test: $(TEST_BINS)
+#	for %%i in ($(subst /,\, $(TEST_BINS))) \
 	do ((echo %%i) && ((cmd /c %%i) || exit /b) && (echo.))
 
 # Explicitly iterate on files in out\* and bin\*, and

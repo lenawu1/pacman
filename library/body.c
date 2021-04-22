@@ -13,13 +13,18 @@ typedef struct body{
 body_t *body_init(list_t *shape, double mass, rgb_color_t color)
 {
     body_t *my_body = malloc(sizeof(body_t));
+
     my_body->mass = mass;
     my_body->shape = shape;
     my_body->color = color;
+
     vector_t initial_velocity = {.x = 0, .y = 0};
+
     my_body->velocity = initial_velocity;
     vector_t centroid = polygon_centroid(shape);
     my_body->centroid = centroid;
+
+    return my_body;
 }
 
 void body_free(body_t *body)

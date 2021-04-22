@@ -3,6 +3,7 @@
 
 #include "list.h"
 #include "vector.h"
+#include <math.h>
 
 const double CENTROID = 1.0/6.0;
 
