@@ -1,14 +1,24 @@
-#ifndef __LIST_H__
-#define __LIST_H__
+#include <stdlib.h>
+#include <stdio.h>
+#include "body.h"
 
-#include <stddef.h>
+#include "list.h"
+#include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
+#include <assert.h>
 
 /**
  * A growable array of pointers.
  * Can store values of any pointer type (e.g. vector_t*, body_t*).
  * The list automatically grows its internal array when more capacity is needed.
  */
-typedef struct list list_t;
+typedef struct list{
+    void **data;
+    size_t size;
+    size_t capacity;
+    free_func_t freer;
+}list_t;
 
 /**
  * A function that can be called on list elements to release their resources.
@@ -26,14 +36,37 @@ typedef void (*free_func_t)(void *);
  *   in list_free() when they are no longer in use
  * @return a pointer to the newly allocated list
  */
-list_t *list_init(size_t initial_size, free_func_t freer);
+list_t *list_init(size_t initial_size, free_func_t freer){
+    list_t *list = malloc(sizeof(list_t));
+    void **array_data = malloc(initial_size * sizeof(void*));
+
+    assert(list != NULL);
+    assert(array_data != NULL);
+
+    list->data = array_data;
+    list->size = 0;
+    list->capacity = initial_size;
+    list->freer = freer;
+
+    return list;
+}
 
 /**
  * Releases the memory allocated for a list.
  *
  * @param list a pointer to a list returned from list_init()
  */
-void list_free(list_t *list);
+void list_free(list_t *list){
+    int size = list->size;
+
+    free_func_t fft = list->data;
+
+    for (int i = 0; i < size; i++){
+        fft(list->data[i]);
+    }
+    fft(list->data);
+    fft(list);
+}
 
 /**
  * Gets the size of a list (the number of occupied elements).
@@ -42,7 +75,9 @@ void list_free(list_t *list);
  * @param list a pointer to a list returned from list_init()
  * @return the number of elements in the list
  */
-size_t list_size(list_t *list);
+size_t list_size(list_t *list){
+    return list->size;
+}
 
 /**
  * Gets the element at a given index in a list.
@@ -52,7 +87,10 @@ size_t list_size(list_t *list);
  * @param index an index in the list (the first element is at 0)
  * @return the element at the given index, as a void*
  */
-void *list_get(list_t *list, size_t index);
+void *list_get(list_t *list, size_t index){
+    assert(index < list->size);
+    return list->data[index];
+}
 
 /**
  * Removes the element at a given index in a list and returns it,
@@ -62,7 +100,15 @@ void *list_get(list_t *list, size_t index);
  * @param list a pointer to a list returned from list_init()
  * @return the element at the given index in the list
  */
-void *list_remove(list_t *list, size_t index);
+void *list_remove(list_t *list, size_t index){
+    assert(list->size > 0);
+    void *temp = list->data[index];
+    for (int i = index; i < list->size - 1; i++){
+        list->data[i] = list->data[i + 1];
+    }
+    list->size--;
+    return temp;
+}
 
 /**
  * Appends an element to the end of a list.
@@ -73,7 +119,15 @@ void *list_remove(list_t *list, size_t index);
  * @param list a pointer to a list returned from list_init()
  * @param value the element to add to the end of the list
  */
-void list_add(list_t *list, void *value);
+void list_add(list_t *list, void *value){
+    assert(value != NULL);
+    if (list->size >= list->capacity){
+        int prev_size = list->size;
+        list_resize(list, prev_size * 2);
+    }
+    list->data[list->size] = value;
+    list->size++;
+}
 
 /**
  * Resizes given list to capactiy size.
@@ -81,6 +135,8 @@ void list_add(list_t *list, void *value);
  * @param list a pointer to the list being resized
  * @param size the new size of the list
 */
-void list_resize(list_t *list, size_t size);
-
-#endif // #ifndef __LIST_H__
+void list_resize(list_t *list, size_t size){
+    list->capacity = size;
+    void **temp = realloc(list->data, sizeof(void*) * size);
+    list->data = temp;
+}
