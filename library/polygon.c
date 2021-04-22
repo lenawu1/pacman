@@ -57,6 +57,7 @@ void polygon_translate(list_t *polygon, vector_t translation){
     }
 }
 
+
 void polygon_rotate(list_t *polygon, double angle, vector_t point){
     vector_t negated_pt = vec_negate(point);
     polygon_translate(polygon, negated_pt);

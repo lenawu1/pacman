@@ -4,6 +4,7 @@
 #include "color.h"
 #include "list.h"
 #include "vector.h"
+#include "polygon.h"
 
 /**
  * A rigid body constrained to the plane.
