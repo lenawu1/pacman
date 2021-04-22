@@ -64,6 +64,7 @@ void list_free(list_t *list){
     for (int i = 0; i < size; i++){
         fft(list->data[i]);
     }
+    
     fft(list->data);
     fft(list);
 }
