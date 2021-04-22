@@ -12,4 +12,6 @@ typedef struct {
     float b;
 } rgb_color_t;
 
+rgb_color_t rgb_color_init();
+
 #endif // #ifndef __COLOR_H__
