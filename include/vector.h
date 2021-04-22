@@ -11,6 +11,10 @@ typedef struct {
     double y;
 } vector_t;
 
+
+vector_t vec_init(double x, double y);
+
+
 /**
  * The zero vector, i.e. (0, 0).
  * "extern" declares this global variable without allocating memory for it.

@@ -13,8 +13,7 @@ const size_t INIT_CAPACITY = 100;
  * A collection of bodies.
  * The scene automatically resizes to store arbitrarily many bodies.
  */
-typedef struct scene
-{
+typedef struct scene{
     list_t *bodies;
     size_t size;
 }scene_t;
@@ -86,10 +85,8 @@ void scene_add_body(scene_t *scene, body_t *body){
  * @param scene a pointer to a scene returned from scene_init()
  * @param index the index of the body in the scene (starting at 0)
  */
-void scene_remove_body(scene_t *scene, size_t index)
-{
-    body_t *removed = list_get(scene->bodies, index);
-    list_remove(scene->bodies, index);
+void scene_remove_body(scene_t *scene, size_t index){
+    body_t *removed = list_remove(scene->bodies, index);
     body_free(removed);
     scene->size--;
 }
