@@ -115,7 +115,7 @@ void pacman_eat_pellet(scene_t *scene){
     }
 }
 
-void pacman_wrap_around(body_t *pacman)
+/*void pacman_wrap_around(body_t *pacman)
 {
     int num_vertices = list_size(body_get_shape(pacman));
     for(int i = 0; i < num_vertices; i++)
@@ -161,7 +161,7 @@ void pacman_wrap_around(body_t *pacman)
         }
         //vec_free(point);
     }
-}
+}*/
 
 /** 
  * See documentation in sdl_wrapper.h line 40.
@@ -177,6 +177,7 @@ void handler(char key, key_event_type_t type, double held_time){
         held_time += 1.0;
         if (key == DOWN_ARROW){
             //body_set_rotation(pacman, (3 * M_PI) / 2); //3 * M_PI / 2
+            //body_set_rotation(pacman, );
             vector_t down_v = {.x = 0.0, .y = -1.0 * PACMAN_START_MOVING_SPEED};
             body_set_velocity(pacman, vec_multiply(held_time, down_v));
         }

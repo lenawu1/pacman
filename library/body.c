@@ -27,7 +27,6 @@ body_t *body_init(list_t *shape, double mass, rgb_color_t color){
     my_body->velocity = initial_velocity;
 
     my_body->mass = mass;
-    my_body->direction = 0;
     my_body->angle = 0;
 
     return my_body;
@@ -74,7 +73,7 @@ void body_set_centroid(body_t *body, vector_t x){
 }
 
 void body_set_velocity(body_t *body, vector_t v){
-    body->velocity = v;
+    body->velocity = v; // hey i'm going to bed so i'm going to push this version so that you can pull it
 }
 
 /**
