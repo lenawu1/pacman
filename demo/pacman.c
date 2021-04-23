@@ -17,7 +17,7 @@ const vector_t WINDOW_MAX = {.x = 1000, .y = 500};
 
 const double MOUTH_ANGLE = M_PI / 3.0;
 const double PACMAN_RADIUS = 30.0; 
-const double PACMAN_START_MOVING_SPEED = 3.0;
+const double PACMAN_START_MOVING_SPEED = 1.0;
 
 const double PELLET_RADIUS = 5.0;
 const double MASS = 10.0;
