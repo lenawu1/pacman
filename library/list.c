@@ -37,7 +37,6 @@ void list_free(list_t *list){
     for (int i = 0; i < size; i++){
         list->freer(list->data[i]);
     }
-    
     free(list->data);
     free(list);
 }

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "body.h"
 #include "list.h"
+#include <math.h>
 
 typedef struct body{
     list_t *shape;
@@ -64,8 +65,16 @@ rgb_color_t body_get_color(body_t *body){
     return body->color;
 }
 
+// double body_get_direction(body_t *body) {
+//   return body->direction;
+// }
+
 void body_set_centroid(body_t *body, vector_t x){
     body->centroid = x;
+    //vector_t center = polygon_centroid(body_get_shape(body));
+    //vector_t difference = vec_subtract(x, center);
+    //polygon_translate(body_get_shape(body), difference);
+
 }
 
 void body_set_velocity(body_t *body, vector_t v){
@@ -73,11 +82,33 @@ void body_set_velocity(body_t *body, vector_t v){
 }
 
 void body_set_rotation(body_t *body, double angle){
-    polygon_rotate(body->shape, angle, body->centroid);
+    double abs_angle = vec_abs_angle(body->velocity);
+    polygon_rotate(body->shape, abs_angle, body->centroid);
+    // vector_t center = polygon_centroid(body_get_shape(body));
+    // polygon_rotate(body_get_shape(body), angle, center);
+    // body->direction = fmod((body->direction) + angle, 2 * M_PI);
 }
 
+// void body_set_direction(body_t *body, double direction) {
+//     double new_angle = direction - body->direction;
+//     vector_t center = polygon_centroid(body_get_shape(body));
+//     polygon_rotate(body_get_shape(body), new_angle, center);
+//     body->direction = direction;
+// }
+
+// Moves body
 void body_tick(body_t *body, double dt){
     vector_t translation = (body->velocity);
     vec_multiply(dt, translation);
     polygon_translate(body->shape, translation);
+
+    // vector_t translation = {(body->velocity).x * dt, (body->velocity).y * dt};
+    // polygon_translate(body_get_shape(body), translation);
+    // vector_t center = polygon_centroid(body_get_shape(body));
+    // polygon_rotate(body_get_shape(body), body->angle * dt, center);
+    // body->direction = fmod((body->direction + body->angle * dt), 2 * M_PI);
+    // double new_x = (body->acceleration).x * dt + (body->velocity).x;
+    // double new_y = (body->acceleration).y * dt + (body->velocity).y;
+    // vector_t new_velocity = {new_x, new_y};
+    // body->velocity = new_velocity;
 }

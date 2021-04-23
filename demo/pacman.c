@@ -25,9 +25,10 @@ const double VERT_DENSITY = 2 * M_PI / 10;
 const int NUM_PELLETS = 14;
 
 const int NUM_VERTICES = 15;
-const double MAX_VELOCITY = 0.0;
+const double INITIAL_VELOCITY = 0.0;
+const double INITIAL_ACCELERATION = 0.0; //new
 
-//these are up here so that functions run independently
+// these are up here so that functions run independently
 body_t *pacman;
 scene_t *scene;
 
@@ -39,11 +40,13 @@ vector_t random_loc(){
     return vec_center;
 }
 
+const double FLATLINE_180 = (M_PI / 180);
+
 // creates the list_t for shape of pacman (pacman vertices)
 list_t *pacman_init(){
     list_t *pacman_list = list_init(NUM_VERTICES, free);
     double start_angle = (2 * M_PI); //not sure if this is the right angle, have to test
-    double change_angle = (360 / NUM_VERTICES) * (M_PI / 180); // ik i have to pull out the magic number
+    double change_angle = (360 / NUM_VERTICES) * FLATLINE_180;
 
     vector_t *c = malloc(sizeof(vector_t));
     c->x = CENTER.x;
@@ -64,8 +67,8 @@ list_t *pacman_init(){
 // creates the list_t for shape of pellet (pellet vertices)
 list_t *pellet_init(){
     list_t *pellet_list = list_init(NUM_VERTICES, free);
-    double start_angle = (360 / NUM_VERTICES) * (M_PI / 180);
-    double change_angle = (360 / NUM_VERTICES) * (M_PI / 180); // ik i have to pull out the magic number
+    double start_angle = (360 / NUM_VERTICES) * FLATLINE_180;
+    double change_angle = (360 / NUM_VERTICES) * FLATLINE_180;
 
     vector_t *c = malloc(sizeof(vector_t));
     vector_t pellet_center = random_loc();
@@ -81,28 +84,55 @@ list_t *pellet_init(){
     return pellet_list;
 }
 
-/*list_t *multiple_pellets(){
+list_t *multiple_pellets(){
     list_t *multiple_pellet_list = list_init(NUM_VERTICES, free); 
     for(int i = 0; i < NUM_PELLETS; i++){
-        list_add(multiple_pellet_list, pellet_init(););
+        list_add(multiple_pellet_list, pellet_init());
     }
     return multiple_pellet_list;
-}*/
+    //make the pellets yellow here?
+}
 
+// If pacman is close enough to the pellet, pacman will eat it
+int close_to_eat(vector_t first, vector_t second){
+    int close = 1;
+    if (first.x - close < second.x && first.x + close > second.x) {
+        if (first.y - close < second.y && first.y + close > second.y) {
+            return 1;
+        }
+    }
+    return 0; //new
+}
 
 /* when it eats a pellet we want to free the list of vectors of that pellet
 this function might not be void, but i will just put it down as void. */
-//void pacman_eat_pellet();
+void pacman_eat_pellet(scene_t *scene){
+    body_t *pacman = (body_t *) scene_get_body(scene, 0);
+    list_t *pacman_vertices = body_get_shape(pacman);
+    vector_t pac_centroid = polygon_centroid(pacman_vertices);
 
-void pacman_wrap_around()
+    for (size_t i = scene_bodies(scene) - 1; i > 0; i--) {
+        body_t *pellets = (body_t *) scene_get_body(scene, i);
+        list_t *pellet_vertices = body_get_shape(pellets);
+        vector_t pellet_centroid = polygon_centroid(pellet_vertices);
+        if (close_to_eat(pac_centroid, pellet_centroid) == 1) {
+            scene_remove_body(scene, i);
+        }
+    } //new
+}
+
+void pacman_wrap_around(body_t *pacman, vector_t *canvas)
 {
     int num_vertices = list_size(body_get_shape(pacman));
     for(int i = 0; i < num_vertices; i++)
     {
-        double y = ((vector_t*)list_get(body_get_shape(pacman), i))->y;
-        double x = ((vector_t*)list_get(body_get_shape(pacman), i))->x;
+        //combine y and x and free; new
+        vector_t point = {((vector_t*)list_get(body_get_shape(pacman), i))->y, 
+            ((vector_t*)list_get(body_get_shape(pacman), i))->x};
+        // double y = ((vector_t*)list_get(body_get_shape(pacman), i))->y;
+        // double x = ((vector_t*)list_get(body_get_shape(pacman), i))->x;
         vector_t curr_centroid = body_get_centroid(pacman);
-        if (y <= WINDOW_MIN.y){ 
+        if (point.y <= WINDOW_MIN.y){ 
             vector_t wrapped_centroid = 
             {
                 .x = curr_centroid.x, 
@@ -110,7 +140,7 @@ void pacman_wrap_around()
             };
             body_set_centroid(pacman, wrapped_centroid);
         }
-        else if (y >= WINDOW_MAX.y)
+        else if (point.y >= WINDOW_MAX.y)
         {
             vector_t wrapped_centroid = 
             {
@@ -119,7 +149,7 @@ void pacman_wrap_around()
             };
             body_set_centroid(pacman, wrapped_centroid);
         }
-        else if (x <= WINDOW_MIN.x)
+        else if (point.x <= WINDOW_MIN.x)
         {
             vector_t wrapped_centroid = 
             {
@@ -128,7 +158,7 @@ void pacman_wrap_around()
             };
             body_set_centroid(pacman, wrapped_centroid);
         }
-        else if (x >= WINDOW_MAX.x)
+        else if (point.x >= WINDOW_MAX.x)
         {
             vector_t wrapped_centroid = 
             {
@@ -137,9 +167,9 @@ void pacman_wrap_around()
             };
             body_set_centroid(pacman, wrapped_centroid);
         }
+        //vec_free(point);
     }
 } 
-
 
 /** 
  * See documentation in sdl_wrapper.h line 40.
@@ -152,7 +182,7 @@ void pacman_wrap_around()
 **/
 void handler(char key, key_event_type_t type, double held_time){
     if (type == KEY_PRESSED){
-        held_time += 1.0; // idk, however often the program updates or something, this might slow it down
+        held_time += 1.0;
         switch(key){
             case DOWN_ARROW:
                 body_set_rotation(pacman, 3 * M_PI / 2); // 270 degrees
@@ -177,38 +207,52 @@ void handler(char key, key_event_type_t type, double held_time){
         }
     }
     else{
-        /* this should stop the pacman from moving since the key is released
-        but i am too lazy to write it rn so i just said return but
-        i will fix it tmw. */
-        body_set_velocity(pacman, VEC_ZERO);
+        /* this should stop the pacman from moving since the key is release. */
+        held_time = 0;
+        body_t *pacman = scene_get_body((scene_t *) scene, 0);
+        vector_t velocity = {0, 0};
+        body_set_velocity(pacman, velocity);
+        //body_set_velocity(pacman, VEC_ZERO);
     }
 }
 
 int main(){
     sdl_init(WINDOW_MIN, WINDOW_MAX);
         
-    scene = scene_init();
+    scene_t *scene = scene_init();
     double clock = 0.0;
     
+    //pellets = body
     //sdl_draw_polygon(pacman_init(), rgb_color_init());
-    pacman = body_init(pacman_init(), MASS, rgb_color_init()); //cause of error
+    body_t *pacman = body_init(pacman_init(), MASS, rgb_color_init()); //cause of error
     scene_add_body(scene, pacman); 
-
+    
     // sdl_draw_polygon(body_get_shape(pacman), rgb_color_init());
-
     // add pellets
 
-    sdl_on_key(handler); //handles keyboard input - inside while loop or not? - asked devin
+    sdl_on_key(handler); //handles keyboard input
+    scene_add_body(scene, pacman);
+    for (size_t i = 0; i < NUM_PELLETS; i++) {
+        body_t *pellet = body_init(pellet_init(), MASS, rgb_color_init()); 
+        scene_add_body(scene, pellet); 
+    }
 
     while(!sdl_is_done()){
         double dt = time_since_last_tick();
         clock += dt;
-
+        vector_t *canvas = malloc(sizeof(vector_t));
+        sdl_clear();
         // spawn pellets at time intervals, kinda like gravity stars
-        
-        scene_tick(scene, dt);
-        sdl_render_scene(scene);
+        scene_tick(scene, dt); // updating the position
+        pacman_wrap_around(scene_get_body(scene, 0), canvas);
+        for (size_t i = 0; i < scene_bodies(scene); i++){
+            body_t *s = scene_get_body(scene, i);
+            sdl_draw_polygon(body_get_shape(s), body_get_color(s));
     }
+        //sdl_render_scene(scene);
+        pacman_eat_pellet(scene); // checks if pellets were eaten
 
+        sdl_show();
+    }
     scene_free(scene);
 }

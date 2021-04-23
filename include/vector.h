@@ -93,4 +93,6 @@ double vec_cross(vector_t v1, vector_t v2);
  */
 vector_t vec_rotate(vector_t v, double angle);
 
+double vec_abs_angle(vector_t v);
+
 #endif // #ifndef __VECTOR_H__
