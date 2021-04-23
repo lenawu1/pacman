@@ -31,8 +31,8 @@ body_t *body_init(list_t *shape, double mass, rgb_color_t color){
     my_body->angle = 0;
 
     return my_body;
-}// I scheduled another oh sesh w devon for 5 today is that okay?
-// thats good!
+}
+
 void body_free(body_t *body){
     list_free(body->shape);
     free(body);
@@ -69,11 +69,8 @@ rgb_color_t body_get_color(body_t *body){
 // }
 
 void body_set_centroid(body_t *body, vector_t x){
+    polygon_translate(body_get_shape(body), vec_subtract(x, body->centroid));
     body->centroid = x;
-    //vector_t center = polygon_centroid(body_get_shape(body));
-    //vector_t difference = vec_subtract(x, center);
-    //polygon_translate(body_get_shape(body), difference);
-
 }
 
 void body_set_velocity(body_t *body, vector_t v){
@@ -89,12 +86,7 @@ void body_set_velocity(body_t *body, vector_t v){
  * @param angle the body's new angle in radians. Positive is counterclockwise.
  */
 void body_set_rotation(body_t *body, double angle){
-    //double abs_angle = vec_abs_angle(body->velocity);
-    double abs_angle = angle;
-    polygon_rotate(body->shape, abs_angle, body->centroid);
-    // vector_t center = polygon_centroid(body_get_shape(body));
-    // polygon_rotate(body_get_shape(body), angle, center);
-    // body->direction = fmod((body->direction) + angle, 2 * M_PI);
+    polygon_rotate(body_get_shape(body), angle, body->centroid);
 }
 
 // void body_set_direction(body_t *body, double direction) {
