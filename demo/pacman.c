@@ -16,10 +16,10 @@ const vector_t WINDOW_MIN = {.x = 0, .y = 0};
 const vector_t WINDOW_MAX = {.x = 1000, .y = 500};
 
 const double MOUTH_ANGLE = M_PI / 3.0;
-const double PACMAN_RADIUS = 50.0; 
-const double PACMAN_START_MOVING_SPEED = 1.0;
+const double PACMAN_RADIUS = 30.0; 
+const double PACMAN_START_MOVING_SPEED = 3.0;
 
-const double PELLET_RADIUS = 2.0;
+const double PELLET_RADIUS = 5.0;
 const double MASS = 10.0;
 const double VERT_DENSITY = 2 * M_PI / 10;
 const int NUM_PELLETS = 14;
@@ -28,8 +28,6 @@ const int NUM_VERTICES = 15;
 const double INITIAL_VELOCITY = 0.0;
 
 body_t *pacman;
-scene_t *scene;
-
 
 vector_t random_loc(){
     vector_t vec_center = (vector_t) {rand() % (int)(WINDOW_MAX.x), rand() % (int)(WINDOW_MAX.y)};
@@ -60,7 +58,14 @@ list_t *pacman_init(){
     return pacman_list;
 }
 
-// creates the list_t for shape of pellet (pellet vertices)
+
+// Places pacman on screen.
+void add_pacman(scene_t *scene, body_t *pacman){
+    scene_add_body(scene, pacman);
+}
+
+
+// Creates the pellet shape and centers it at a random location.
 list_t *pellet_init(){
     list_t *pellet_list = list_init(NUM_VERTICES, free);
     double start_angle = (360 / NUM_VERTICES) * FLATLINE_180;
@@ -80,88 +85,62 @@ list_t *pellet_init(){
     return pellet_list;
 }
 
-// list_t *multiple_pellets(){
-//     list_t *multiple_pellet_list = list_init(NUM_VERTICES, free); 
-//     for(int i = 0; i < NUM_PELLETS; i++){
-//         list_add(multiple_pellet_list, pellet_init());
-//     }
-//     return multiple_pellet_list;
-// }
 
-// If pacman is close enough to the pellet, pacman will eat it
-int close_to_eat(vector_t first, vector_t second){
-    int close = 1;
-    if (first.x - close < second.x && first.x + close > second.x) {
-        if (first.y - close < second.y && first.y + close > second.y) {
-            return 1;
-        }
+void add_pellets(scene_t *scene, int num_pellets){
+    for (int i = 0; i < num_pellets; i++){
+        scene_add_body(scene, body_init(pellet_init(), MASS, rgb_color_init()));
     }
-    return 0;
 }
+
+
+bool pacman_close_to_pellet(vector_t pacman_centroid, vector_t pellet_centroid){
+    return (pacman_centroid.x + PACMAN_RADIUS > pellet_centroid.x && pacman_centroid.x - PACMAN_RADIUS < pellet_centroid.x 
+         && pacman_centroid.y + PACMAN_RADIUS > pellet_centroid.y && pacman_centroid.y - PACMAN_RADIUS < pellet_centroid.y);
+}
+
 
 void pacman_eat_pellet(scene_t *scene){
-    body_t *pacman = (body_t *) scene_get_body(scene, 0);
-    list_t *pacman_vertices = body_get_shape(pacman);
-    vector_t pac_centroid = polygon_centroid(pacman_vertices);
+    list_t *pacman_shape = body_get_shape(pacman);
+    vector_t pacman_centroid = polygon_centroid(pacman_shape);
 
-    for (size_t i = scene_bodies(scene) - 1; i > 0; i--) {
-        body_t *pellets = (body_t *) scene_get_body(scene, i);
-        list_t *pellet_vertices = body_get_shape(pellets);
-        vector_t pellet_centroid = polygon_centroid(pellet_vertices);
-        if (close_to_eat(pac_centroid, pellet_centroid) == 1) {
+    for (size_t i = 1; i < scene_bodies(scene); i++) {
+        body_t *curr_pellet = (body_t *) scene_get_body(scene, i);
+        vector_t pellet_centroid = polygon_centroid(body_get_shape(curr_pellet));
+
+        if(pacman_close_to_pellet(pacman_centroid, pellet_centroid)){
             scene_remove_body(scene, i);
-            pellet_init();
+            break;
         }
     }
 }
 
-/*void pacman_wrap_around(body_t *pacman)
-{
-    int num_vertices = list_size(body_get_shape(pacman));
-    for(int i = 0; i < num_vertices; i++)
-    {
-        vector_t point = {((vector_t*)list_get(body_get_shape(pacman), i))->y, ((vector_t*)list_get(body_get_shape(pacman), i))->x};
+void pacman_wrap_around(body_t *pacman){
+    for(int i = 0; i < list_size(body_get_shape(pacman)); i++){
+        vector_t *point = list_get(body_get_shape(pacman), i);
         vector_t curr_centroid = body_get_centroid(pacman);
 
-        if (point.y <= WINDOW_MIN.y){ 
-            vector_t wrapped_centroid = 
-            {
-                .x = curr_centroid.x, 
-                .y = WINDOW_MAX.y - PACMAN_RADIUS
-            };
-
+        // y low
+        if (point->y <= WINDOW_MIN.y){ 
+            vector_t wrapped_centroid = {.x = curr_centroid.x, .y = curr_centroid.y + WINDOW_MAX.y};
             body_set_centroid(pacman, wrapped_centroid);
         }
-        else if (point.y >= WINDOW_MAX.y)
-        {
-            vector_t wrapped_centroid = 
-            {
-                .x = curr_centroid.x, 
-                .y = WINDOW_MIN.y + PACMAN_RADIUS
-            };
+        // y high
+        else if (point->y >= WINDOW_MAX.y){
+            vector_t wrapped_centroid = {.x = curr_centroid.x, .y = curr_centroid.y - WINDOW_MAX.y};
             body_set_centroid(pacman, wrapped_centroid);
         }
-        else if (point.x <= WINDOW_MIN.x)
-        {
-            vector_t wrapped_centroid = 
-            {
-                .x = WINDOW_MAX.x - PACMAN_RADIUS, 
-                .y = curr_centroid.y
-            };
+        // x low
+        else if (point->x <= WINDOW_MIN.x){ 
+            vector_t wrapped_centroid = {.x = curr_centroid.x + WINDOW_MAX.x, .y = curr_centroid.y};
             body_set_centroid(pacman, wrapped_centroid);
         }
-        else if (point.x >= WINDOW_MAX.x)
-        {
-            vector_t wrapped_centroid = 
-            {
-                .x = WINDOW_MIN.x + PACMAN_RADIUS, 
-                .y = curr_centroid.y
-            };
+        // x high
+        else if (point->x >= WINDOW_MAX.x){
+            vector_t wrapped_centroid = {.x = curr_centroid.x - WINDOW_MAX.x, .y = curr_centroid.y};
             body_set_centroid(pacman, wrapped_centroid);
         }
-        //vec_free(point);
     }
-}*/
+}
 
 /** 
  * See documentation in sdl_wrapper.h line 40.
@@ -174,10 +153,9 @@ void pacman_eat_pellet(scene_t *scene){
 **/
 void handler(char key, key_event_type_t type, double held_time){
     if (type == KEY_PRESSED){
-        held_time += 1.0;
+        held_time += 1.5;
         if (key == DOWN_ARROW){
             //body_set_rotation(pacman, (3 * M_PI) / 2); //3 * M_PI / 2
-            //body_set_rotation(pacman, );
             vector_t down_v = {.x = 0.0, .y = -1.0 * PACMAN_START_MOVING_SPEED};
             body_set_velocity(pacman, vec_multiply(held_time, down_v));
         }
@@ -210,39 +188,28 @@ int main(){
         
     scene_t *scene = scene_init();
     double clock = 0.0;
-    
-    //pellets = body
-    //sdl_draw_polygon(pacman_init(), rgb_color_init());
-    pacman = body_init(pacman_init(), MASS, rgb_color_init()); //cause of error
-    scene_add_body(scene, pacman); 
-    // add pellets
 
-    sdl_on_key(handler); //handles keyboard input
-    // i think this should go in the while loop down there so it continuously spawns 
+    pacman = body_init(pacman_init(), MASS, rgb_color_init());
+    add_pacman(scene, pacman);
+
+    add_pellets(scene, NUM_PELLETS);
+
+    sdl_on_key(handler);
 
     while(!sdl_is_done()){
         double dt = time_since_last_tick();
         clock += dt;
-        
-        // spawn pellets at time intervals, kinda like gravity stars
-        scene_tick(scene, dt); // updating the position
 
-        //body_t *pellet = body_init(pellet_init(), MASS, rgb_color_init()); 
-        //scene_add_body(scene, pellet);
-        /*if (clock >= 3.0){
+        if (clock >= 3.0){
+            add_pellets(scene, 1);
             clock = 0.0;
-            
-            for (size_t i = 0; i < scene_bodies(scene); i++){
-                    body_t *s = scene_get_body(scene, i);
-                    scene_add_body(scene, s);
-                    //sdl_draw_polygon(body_get_shape(s), body_get_color(s));
-            }
-        }*/
+        }
         
         pacman_wrap_around(pacman);
+        pacman_eat_pellet(scene);
+
+        scene_tick(scene, dt);
         sdl_render_scene(scene);
-        pacman_eat_pellet(scene); // checks if pellets were eaten
-        sdl_show();
     }
     scene_free(scene);
 }

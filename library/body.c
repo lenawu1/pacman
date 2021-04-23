@@ -68,7 +68,8 @@ rgb_color_t body_get_color(body_t *body){
 // }
 
 void body_set_centroid(body_t *body, vector_t x){
-    polygon_translate(body_get_shape(body), vec_subtract(x, body->centroid));
+    vector_t translate = vec_subtract(x, body->centroid);
+    polygon_translate(body->shape, translate);
     body->centroid = x;
 }
 

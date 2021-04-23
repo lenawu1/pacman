@@ -30,7 +30,6 @@ scene_t *scene_init(void)
     scene_t *scene = malloc(sizeof(scene_t));
     assert(scene != NULL);
     scene->bodies = list_init(INIT_CAPACITY, (free_func_t) body_free);
-    scene->size = 0;
     return scene;
 }
 
@@ -75,7 +74,6 @@ body_t *scene_get_body(scene_t *scene, size_t index){
  */
 void scene_add_body(scene_t *scene, body_t *body){
     list_add(scene->bodies, body);
-    scene->size++;
 }
 
 /**
@@ -86,9 +84,9 @@ void scene_add_body(scene_t *scene, body_t *body){
  * @param index the index of the body in the scene (starting at 0)
  */
 void scene_remove_body(scene_t *scene, size_t index){
+    assert(index <= list_size(scene->bodies));
     body_t *removed = list_remove(scene->bodies, index);
     body_free(removed);
-    scene->size--;
 }
 
 /**
