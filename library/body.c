@@ -89,7 +89,8 @@ void body_set_velocity(body_t *body, vector_t v){
  * @param angle the body's new angle in radians. Positive is counterclockwise.
  */
 void body_set_rotation(body_t *body, double angle){
-    double abs_angle = vec_abs_angle(body->velocity);
+    //double abs_angle = vec_abs_angle(body->velocity);
+    double abs_angle = angle;
     polygon_rotate(body->shape, abs_angle, body->centroid);
     // vector_t center = polygon_centroid(body_get_shape(body));
     // polygon_rotate(body_get_shape(body), angle, center);

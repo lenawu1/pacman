@@ -28,6 +28,9 @@ const int NUM_VERTICES = 15;
 const double INITIAL_VELOCITY = 0.0;
 const double INITIAL_ACCELERATION = 0.0; //new
 
+body_t *pacman;
+scene_t *scene;
+
 
 vector_t random_loc(){    
     vector_t vec_center = {
@@ -177,36 +180,33 @@ void pacman_wrap_around(body_t *pacman, vector_t *canvas)
  * @param type can be KEY_PRESSED or KEY_RELEASED
  * @param held_time how long the key was held down
 **/
-void handler(char key, key_event_type_t type, double held_time, body_t *pacman, scene_t *scene){
+void handler(char key, key_event_type_t type, double held_time){
     if (type == KEY_PRESSED){
         held_time += 1.0;
-        switch(key){
-            case DOWN_ARROW:
-                body_set_rotation(pacman, 0.0); //3 * M_PI / 2
-                vector_t down_v = {.x = 0.0, .y = -1.0 * PACMAN_START_MOVING_SPEED};
-                body_set_velocity(pacman, vec_multiply(held_time, down_v));
-                break; // one at a time
-            case UP_ARROW:
-                body_set_rotation(pacman, 0.0); //M_PI / 2
-                vector_t up_v = {.x = 0.0, .y = PACMAN_START_MOVING_SPEED};
-                body_set_velocity(pacman, vec_multiply(held_time, up_v));
-                break;
-            case LEFT_ARROW:
-                body_set_rotation(pacman, M_PI);
-                vector_t left_v = {.x = -1.0 * PACMAN_START_MOVING_SPEED, .y = 0};
-                body_set_velocity(pacman, vec_multiply(held_time, left_v));
-                break;
-            case RIGHT_ARROW:
-                body_set_rotation(pacman, 0.0);
-                vector_t right_v = {.x = PACMAN_START_MOVING_SPEED, .y = 0};
-                body_set_velocity(pacman, vec_multiply(held_time, right_v));
-                break;
+        if (key == DOWN_ARROW){
+            //body_set_rotation(pacman, 0.0); //3 * M_PI / 2
+            vector_t down_v = {.x = 0.0, .y = -1.0 * PACMAN_START_MOVING_SPEED};
+            body_set_velocity(pacman, vec_multiply(held_time, down_v));
+        }
+        else if (key == UP_ARROW){
+            //body_set_rotation(pacman, 0.0); //M_PI / 2
+            vector_t up_v = {.x = 0.0, .y = PACMAN_START_MOVING_SPEED};
+            body_set_velocity(pacman, vec_multiply(held_time, up_v));
+        }
+        else if (key == LEFT_ARROW){
+            //body_set_rotation(pacman, 0.0);
+            vector_t left_v = {.x = -1.0 * PACMAN_START_MOVING_SPEED, .y = 0};
+            body_set_velocity(pacman, vec_multiply(held_time, left_v));
+        }
+        else if (key == RIGHT_ARROW){
+            //body_set_rotation(pacman, 0.0);
+            vector_t right_v = {.x = PACMAN_START_MOVING_SPEED, .y = 0};
+            body_set_velocity(pacman, vec_multiply(held_time, right_v));
         }
     }
     else{
         /* this should stop the pacman from moving since the key is release. */
         held_time = 0;
-        body_t *pacman = scene_get_body((scene_t *) scene, 0);
         vector_t velocity = {0, 0};
         body_set_velocity(pacman, velocity);
         //body_set_velocity(pacman, VEC_ZERO);
@@ -221,10 +221,8 @@ int main(){
     
     //pellets = body
     //sdl_draw_polygon(pacman_init(), rgb_color_init());
-    body_t *pacman = body_init(pacman_init(), MASS, rgb_color_init()); //cause of error
+    pacman = body_init(pacman_init(), MASS, rgb_color_init()); //cause of error
     scene_add_body(scene, pacman); 
-    
-    // sdl_draw_polygon(body_get_shape(pacman), rgb_color_init());
     // add pellets
 
     sdl_on_key(handler); //handles keyboard input
