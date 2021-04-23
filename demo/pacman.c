@@ -28,9 +28,6 @@ const int NUM_VERTICES = 15;
 const double INITIAL_VELOCITY = 0.0;
 const double INITIAL_ACCELERATION = 0.0; //new
 
-// these are up here so that functions run independently
-body_t *pacman;
-scene_t *scene;
 
 vector_t random_loc(){    
     vector_t vec_center = {
@@ -180,7 +177,7 @@ void pacman_wrap_around(body_t *pacman, vector_t *canvas)
  * @param type can be KEY_PRESSED or KEY_RELEASED
  * @param held_time how long the key was held down
 **/
-void handler(char key, key_event_type_t type, double held_time){
+void handler(char key, key_event_type_t type, double held_time, body_t *pacman, scene_t *scene){
     if (type == KEY_PRESSED){
         held_time += 1.0;
         switch(key){
@@ -231,7 +228,6 @@ int main(){
     // add pellets
 
     sdl_on_key(handler); //handles keyboard input
-    scene_add_body(scene, pacman);
     for (size_t i = 0; i < NUM_PELLETS; i++) {
         body_t *pellet = body_init(pellet_init(), MASS, rgb_color_init()); 
         scene_add_body(scene, pellet); 

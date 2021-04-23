@@ -37,7 +37,7 @@ typedef enum {
  * @param type the type of key event (KEY_PRESSED or KEY_RELEASED)
  * @param held_time if a press event, the time the key has been held in seconds
  */
-typedef void (*key_handler_t)(char key, key_event_type_t type, double held_time);
+typedef void (*key_handler_t)(char key, key_event_type_t type, double held_time, body_t *pacman, scene_t *scene);
 
 /**
  * Initializes the SDL window and renderer.
