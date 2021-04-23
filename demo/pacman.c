@@ -169,7 +169,7 @@ void pacman_wrap_around(body_t *pacman, vector_t *canvas)
         }
         //vec_free(point);
     }
-} 
+}
 
 /** 
  * See documentation in sdl_wrapper.h line 40.
@@ -185,17 +185,17 @@ void handler(char key, key_event_type_t type, double held_time){
         held_time += 1.0;
         switch(key){
             case DOWN_ARROW:
-                body_set_rotation(pacman, 3 * M_PI / 2); // 270 degrees
+                body_set_rotation(pacman, 0.0); //3 * M_PI / 2
                 vector_t down_v = {.x = 0.0, .y = -1.0 * PACMAN_START_MOVING_SPEED};
                 body_set_velocity(pacman, vec_multiply(held_time, down_v));
                 break; // one at a time
             case UP_ARROW:
-                body_set_rotation(pacman, M_PI / 2); // 90 degrees
+                body_set_rotation(pacman, 0.0); //M_PI / 2
                 vector_t up_v = {.x = 0.0, .y = PACMAN_START_MOVING_SPEED};
                 body_set_velocity(pacman, vec_multiply(held_time, up_v));
                 break;
             case LEFT_ARROW:
-                body_set_rotation(pacman, M_PI); // 180 degrees
+                body_set_rotation(pacman, M_PI);
                 vector_t left_v = {.x = -1.0 * PACMAN_START_MOVING_SPEED, .y = 0};
                 body_set_velocity(pacman, vec_multiply(held_time, left_v));
                 break;
