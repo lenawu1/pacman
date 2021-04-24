@@ -14,6 +14,7 @@ typedef struct body{
     double mass;
     double direction;
     double angle;
+    double abs_theta;
 }body_t;
 
 body_t *body_init(list_t *shape, double mass, rgb_color_t color){
@@ -21,6 +22,7 @@ body_t *body_init(list_t *shape, double mass, rgb_color_t color){
 
     my_body->shape = shape;
     my_body->color = color;
+    my_body->abs_theta = 0;
     my_body->centroid = polygon_centroid(shape);
 
     vector_t initial_velocity = {.x = 0, .y = 0};
@@ -69,12 +71,12 @@ rgb_color_t body_get_color(body_t *body){
 
 void body_set_centroid(body_t *body, vector_t x){
     vector_t translate = vec_subtract(x, body->centroid);
-    polygon_translate(body->shape, translate);
     body->centroid = x;
+    polygon_translate(body->shape, translate);
 }
 
 void body_set_velocity(body_t *body, vector_t v){
-    body->velocity = v; // hey i'm going to bed so i'm going to push this version so that you can pull it
+    body->velocity = v; 
 }
 
 /**
@@ -86,7 +88,10 @@ void body_set_velocity(body_t *body, vector_t v){
  * @param angle the body's new angle in radians. Positive is counterclockwise.
  */
 void body_set_rotation(body_t *body, double angle){
-    polygon_rotate(body_get_shape(body), angle, body->centroid);
+    if (angle != body->abs_theta){
+        polygon_rotate(body->shape, angle - body->abs_theta, body->centroid);
+    }
+    body->abs_theta = angle;
 }
 
 // void body_set_direction(body_t *body, double direction) {
@@ -101,6 +106,7 @@ void body_tick(body_t *body, double dt){
     vector_t translation = (body->velocity);
     vec_multiply(dt, translation);
     polygon_translate(body->shape, translation);
+    body->centroid = polygon_centroid(body->shape);
 
     // vector_t translation = {(body->velocity).x * dt, (body->velocity).y * dt};
     // polygon_translate(body_get_shape(body), translation);
