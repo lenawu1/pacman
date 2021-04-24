@@ -155,12 +155,12 @@ void handler(char key, key_event_type_t type, double held_time){
     if (type == KEY_PRESSED){
         held_time += 1.5;
         if (key == DOWN_ARROW){
-            //body_set_rotation(pacman, (3 * M_PI) / 2); //3 * M_PI / 2
+            body_set_rotation(pacman, -M_PI / 2);
             vector_t down_v = {.x = 0.0, .y = -1.0 * PACMAN_START_MOVING_SPEED};
             body_set_velocity(pacman, vec_multiply(held_time, down_v));
         }
         else if (key == UP_ARROW){
-            //body_set_rotation(pacman, M_PI / 2); //M_PI / 2
+            body_set_rotation(pacman, M_PI / 2);
             vector_t up_v = {.x = 0.0, .y = PACMAN_START_MOVING_SPEED};
             body_set_velocity(pacman, vec_multiply(held_time, up_v));
         }
@@ -195,6 +195,7 @@ int main(){
     add_pellets(scene, NUM_PELLETS);
 
     sdl_on_key(handler);
+    body_set_rotation(pacman, M_PI / 2);
 
     while(!sdl_is_done()){
         double dt = time_since_last_tick();
