@@ -65,10 +65,6 @@ rgb_color_t body_get_color(body_t *body){
     return body->color;
 }
 
-// double body_get_direction(body_t *body) {
-//   return body->direction;
-// }
-
 void body_set_centroid(body_t *body, vector_t x){
     vector_t translate = vec_subtract(x, body->centroid);
     body->centroid = x;
@@ -79,14 +75,6 @@ void body_set_velocity(body_t *body, vector_t v){
     body->velocity = v; 
 }
 
-/**
- * Changes a body's orientation in the plane.
- * The body is rotated about its center of mass.
- * Note that the angle is *absolute*, not relative to the current orientation.
- *
- * @param body a pointer to a body returned from body_init()
- * @param angle the body's new angle in radians. Positive is counterclockwise.
- */
 void body_set_rotation(body_t *body, double angle){
     if (angle != body->abs_theta){
         polygon_rotate(body->shape, angle - body->abs_theta, body->centroid);
@@ -94,27 +82,9 @@ void body_set_rotation(body_t *body, double angle){
     body->abs_theta = angle;
 }
 
-// void body_set_direction(body_t *body, double direction) {
-//     double new_angle = direction - body->direction;
-//     vector_t center = polygon_centroid(body_get_shape(body));
-//     polygon_rotate(body_get_shape(body), new_angle, center);
-//     body->direction = direction;
-// }
-
-// Moves body
 void body_tick(body_t *body, double dt){
     vector_t translation = (body->velocity);
     vec_multiply(dt, translation);
     polygon_translate(body->shape, translation);
     body->centroid = polygon_centroid(body->shape);
-
-    // vector_t translation = {(body->velocity).x * dt, (body->velocity).y * dt};
-    // polygon_translate(body_get_shape(body), translation);
-    // vector_t center = polygon_centroid(body_get_shape(body));
-    // polygon_rotate(body_get_shape(body), body->angle * dt, center);
-    // body->direction = fmod((body->direction + body->angle * dt), 2 * M_PI);
-    // double new_x = (body->acceleration).x * dt + (body->velocity).x;
-    // double new_y = (body->acceleration).y * dt + (body->velocity).y;
-    // vector_t new_velocity = {new_x, new_y};
-    // body->velocity = new_velocity;
 }
