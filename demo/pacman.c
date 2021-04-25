@@ -99,24 +99,33 @@ bool pacman_close_to_pellet(vector_t pacman_centroid, vector_t pellet_centroid){
 }
 
 
-void pacman_eat_pellet(scene_t *scene){
+void pacman_eat_pellet(scene_t *scene)
+{
     list_t *pacman_shape = body_get_shape(pacman);
     vector_t pacman_centroid = polygon_centroid(pacman_shape);
 
-    for (size_t i = 1; i < scene_bodies(scene); i++) {
+    for (size_t i = 1; i < scene_bodies(scene); i++) 
+    {
         body_t *curr_pellet = (body_t *) scene_get_body(scene, i);
-        vector_t pellet_centroid = polygon_centroid(body_get_shape(curr_pellet));
+        list_t *pellet_shape = body_get_shape(curr_pellet);
+        vector_t pellet_centroid = polygon_centroid(pellet_shape);
 
         if(pacman_close_to_pellet(pacman_centroid, pellet_centroid)){
             scene_remove_body(scene, i);
             break;
         }
+        list_free(pellet_shape);
     }
+    list_free(pacman_shape);
 }
+    
 
-void pacman_wrap_around(body_t *pacman){
-    for(int i = 0; i < list_size(body_get_shape(pacman)); i++){
-        vector_t *point = list_get(body_get_shape(pacman), i);
+void pacman_wrap_around(body_t *pacman)
+{
+    list_t *pacman_shape = body_get_shape(pacman);
+    for(int i = 0; i < list_size(pacman_shape); i++){
+        list_t *pacman_shape = body_get_shape(pacman);
+        vector_t *point = list_get(pacman_shape, i);
         vector_t curr_centroid = body_get_centroid(pacman);
 
         // y low
@@ -139,7 +148,9 @@ void pacman_wrap_around(body_t *pacman){
             vector_t wrapped_centroid = {.x = curr_centroid.x - WINDOW_MAX.x, .y = curr_centroid.y};
             body_set_centroid(pacman, wrapped_centroid);
         }
+        list_free(pacman_shape);
     }
+    list_free(pacman_shape);
 }
 
 /** 
