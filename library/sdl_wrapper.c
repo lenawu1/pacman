@@ -118,7 +118,7 @@ void sdl_init(vector_t min, vector_t max) {
     renderer = SDL_CreateRenderer(window, -1, 0);
 }
 
-bool sdl_is_done(void) {
+bool sdl_is_done(void *pacman) {
     SDL_Event *event = malloc(sizeof(*event));
     assert(event != NULL);
     while (SDL_PollEvent(event)) {
@@ -141,7 +141,7 @@ bool sdl_is_done(void) {
                 key_event_type_t type =
                     event->type == SDL_KEYDOWN ? KEY_PRESSED : KEY_RELEASED;
                 double held_time = (timestamp - key_start_timestamp) / MS_PER_S;
-                key_handler(key, type, held_time);
+                key_handler(key, type, held_time, pacman);
                 break;
         }
     }

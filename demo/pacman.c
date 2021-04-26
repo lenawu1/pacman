@@ -27,7 +27,6 @@ const int NUM_PELLETS = 14;
 const int NUM_VERTICES = 15;
 const double INITIAL_VELOCITY = 0.0;
 
-body_t *pacman;
 
 vector_t random_loc(){
     vector_t vec_center = (vector_t) {rand() % (int)(WINDOW_MAX.x), rand() % (int)(WINDOW_MAX.y)};
@@ -82,6 +81,7 @@ list_t *pellet_init(){
         vertex->y = sin(start_angle + (i + 1) * change_angle) * PELLET_RADIUS + c->y;
         list_add(pellet_list, vertex);
     }
+
     return pellet_list;
 }
 
@@ -99,7 +99,7 @@ bool pacman_close_to_pellet(vector_t pacman_centroid, vector_t pellet_centroid){
 }
 
 
-void pacman_eat_pellet(scene_t *scene)
+void pacman_eat_pellet(scene_t *scene, body_t *pacman)
 {
     list_t *pacman_shape = body_get_shape(pacman);
     vector_t pacman_centroid = polygon_centroid(pacman_shape);
@@ -162,7 +162,7 @@ void pacman_wrap_around(body_t *pacman)
  * @param type can be KEY_PRESSED or KEY_RELEASED
  * @param held_time how long the key was held down
 **/
-void handler(char key, key_event_type_t type, double held_time){
+void handler(char key, key_event_type_t type, double held_time, void *pacman){
     if (type == KEY_PRESSED){
         held_time += 1.5;
         if (key == DOWN_ARROW){
@@ -200,7 +200,7 @@ int main(){
     scene_t *scene = scene_init();
     double clock = 0.0;
 
-    pacman = body_init(pacman_init(), MASS, rgb_color_init());
+    void *pacman = body_init(pacman_init(), MASS, rgb_color_init());
     add_pacman(scene, pacman);
 
     add_pellets(scene, NUM_PELLETS);
@@ -208,7 +208,7 @@ int main(){
     sdl_on_key(handler);
     body_set_rotation(pacman, M_PI / 2);
 
-    while(!sdl_is_done()){
+    while(!sdl_is_done(pacman)){
         double dt = time_since_last_tick();
         clock += dt;
 
@@ -218,10 +218,11 @@ int main(){
         }
         
         pacman_wrap_around(pacman);
-        pacman_eat_pellet(scene);
+        pacman_eat_pellet(scene, pacman);
 
         scene_tick(scene, dt);
         sdl_render_scene(scene);
     }
+    
     scene_free(scene);
 }
