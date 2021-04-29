@@ -37,7 +37,7 @@ typedef enum {
  * @param type the type of key event (KEY_PRESSED or KEY_RELEASED)
  * @param held_time if a press event, the time the key has been held in seconds
  */
-typedef void (*key_handler_t)(char key, key_event_type_t type, double held_time);
+typedef void (*key_handler_t)(char key, key_event_type_t type, double held_time, void *pacman);
 
 /**
  * Initializes the SDL window and renderer.
@@ -54,7 +54,7 @@ void sdl_init(vector_t min, vector_t max);
  *
  * @return true if the window was closed, false otherwise
  */
-bool sdl_is_done(void);
+bool sdl_is_done(void *pacman);
 
 /**
  * Clears the screen. Should be called before drawing polygons in each frame.
